@@ -7,7 +7,7 @@
 # load_dotenv()
 
 # model = ChatGoogleGenerativeAI(model="gemini-1.5-flash")
-
+#test
 
 # prompt = load_prompt("template.json")
 
