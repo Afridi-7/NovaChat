@@ -8,11 +8,17 @@ import {
   FileText, 
   Smile,
   Zap,
-  Camera
+  Camera,
+  X,
+  Play,
+  Pause
 } from 'lucide-react';
+import { useVoiceRecording } from '../hooks/useVoiceRecording';
+import { useFileUpload } from '../hooks/useFileUpload';
+import { Attachment } from '../types/chat';
 
 interface ChatInputProps {
-  onSendMessage: (message: string) => void;
+  onSendMessage: (message: string, attachments?: Attachment[]) => void;
   disabled?: boolean;
   placeholder?: string;
   isVoiceMode?: boolean;
@@ -25,10 +31,14 @@ export function ChatInput({
   isVoiceMode = false
 }: ChatInputProps) {
   const [message, setMessage] = useState('');
-  const [isRecording, setIsRecording] = useState(false);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [showAttachments, setShowAttachments] = useState(false);
   const [showEmojis, setShowEmojis] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { recording, startRecording, stopRecording, cancelRecording, clearRecording } = useVoiceRecording();
+  const { uploadState, uploadFile, uploadMultipleFiles, clearError } = useFileUpload();
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -37,11 +47,22 @@ export function ChatInput({
     }
   }, [message]);
 
+  // Handle voice recording completion
+  useEffect(() => {
+    if (recording.audioBlob && !recording.isRecording) {
+      // In a real app, you would send the audio to the server for transcription
+      // For now, we'll just show a placeholder message
+      setMessage('🎤 Voice message recorded');
+      clearRecording();
+    }
+  }, [recording.audioBlob, recording.isRecording, clearRecording]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (message.trim() && !disabled) {
-      onSendMessage(message.trim());
+    if ((message.trim() || attachments.length > 0) && !disabled) {
+      onSendMessage(message.trim(), attachments);
       setMessage('');
+      setAttachments([]);
     }
   };
 
@@ -52,27 +73,142 @@ export function ChatInput({
     }
   };
 
-  const toggleRecording = () => {
-    setIsRecording(!isRecording);
-    // Voice recording functionality would be implemented here
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const newAttachments = await uploadMultipleFiles(files);
+      setAttachments(prev => [...prev, ...newAttachments]);
+      setShowAttachments(false);
+    }
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeAttachment = (attachmentId: string) => {
+    setAttachments(prev => prev.filter(att => att.id !== attachmentId));
+  };
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   const attachmentOptions = [
-    { icon: Image, label: 'Image', color: 'from-pink-400 to-purple-500' },
-    { icon: FileText, label: 'Document', color: 'from-blue-400 to-indigo-500' },
-    { icon: Camera, label: 'Camera', color: 'from-green-400 to-blue-500' }
+    { 
+      icon: Image, 
+      label: 'Image', 
+      color: 'from-pink-400 to-purple-500',
+      accept: 'image/*',
+      onClick: () => fileInputRef.current?.click()
+    },
+    { 
+      icon: FileText, 
+      label: 'Document', 
+      color: 'from-blue-400 to-indigo-500',
+      accept: '.pdf,.doc,.docx,.txt,.md',
+      onClick: () => fileInputRef.current?.click()
+    },
+    { 
+      icon: Camera, 
+      label: 'Camera', 
+      color: 'from-green-400 to-blue-500',
+      accept: 'image/*',
+      onClick: () => {
+        if (fileInputRef.current) {
+          fileInputRef.current.accept = 'image/*';
+          fileInputRef.current.setAttribute('capture', 'camera');
+          fileInputRef.current.click();
+        }
+      }
+    }
   ];
 
   const quickEmojis = ['😊', '👍', '❤️', '😂', '🤔', '👏', '🔥', '✨'];
 
   return (
     <div className="glass-strong border-t border-white/10 p-4">
+      {/* File Input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        multiple
+        className="hidden"
+        onChange={handleFileSelect}
+        accept="image/*,.pdf,.doc,.docx,.txt,.md,audio/*"
+      />
+
+      {/* Upload Progress */}
+      {uploadState.isUploading && (
+        <div className="mb-4 animate-slide-in-up">
+          <div className="glass rounded-lg p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-white/90">Uploading files...</span>
+              <span className="text-sm text-white/70">{uploadState.progress}%</span>
+            </div>
+            <div className="w-full bg-white/20 rounded-full h-2">
+              <div 
+                className="bg-gradient-to-r from-blue-400 to-purple-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${uploadState.progress}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Upload Error */}
+      {uploadState.error && (
+        <div className="mb-4 animate-slide-in-up">
+          <div className="glass rounded-lg p-3 border border-red-400/30">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-red-300">{uploadState.error}</span>
+              <button
+                onClick={clearError}
+                className="text-red-300 hover:text-red-100 hover-scale"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Attachments Preview */}
+      {attachments.length > 0 && (
+        <div className="mb-4 animate-slide-in-up">
+          <div className="flex flex-wrap gap-2">
+            {attachments.map((attachment) => (
+              <div key={attachment.id} className="glass rounded-lg p-2 flex items-center space-x-2">
+                <div className="w-8 h-8 rounded bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
+                  {attachment.type === 'image' && <Image size={16} className="text-white" />}
+                  {attachment.type === 'document' && <FileText size={16} className="text-white" />}
+                  {attachment.type === 'audio' && <Mic size={16} className="text-white" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-white/90 truncate">{attachment.name}</p>
+                  <p className="text-xs text-white/60">{(attachment.size / 1024).toFixed(1)} KB</p>
+                </div>
+                <button
+                  onClick={() => removeAttachment(attachment.id)}
+                  className="text-white/60 hover:text-white hover-scale"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Attachment Options */}
       {showAttachments && (
         <div className="mb-4 flex space-x-3 animate-slide-in-up">
           {attachmentOptions.map((option, index) => (
             <button
               key={option.label}
+              onClick={option.onClick}
               className="flex flex-col items-center p-3 glass rounded-xl hover:bg-white/10 transition-all duration-300 hover-lift group"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
@@ -151,23 +287,23 @@ export function ChatInput({
         {/* Voice Recording Button */}
         <button
           type="button"
-          onClick={toggleRecording}
+          onClick={recording.isRecording ? stopRecording : startRecording}
           className={`btn-floating w-12 h-12 hover-scale ${
-            isRecording
+            recording.isRecording
               ? 'bg-gradient-to-r from-red-400 to-red-600'
               : isVoiceMode 
                 ? 'bg-gradient-to-r from-purple-400 to-pink-500'
                 : ''
           }`}
-          title={isRecording ? 'Stop recording' : 'Voice recording'}
+          title={recording.isRecording ? 'Stop recording' : 'Voice recording'}
         >
-          {isRecording ? <Square size={20} /> : <Mic size={20} />}
+          {recording.isRecording ? <Square size={20} /> : <Mic size={20} />}
         </button>
 
         {/* Send Button */}
         <button
           type="submit"
-          disabled={disabled || !message.trim()}
+          disabled={disabled || (!message.trim() && attachments.length === 0)}
           className="btn-floating w-12 h-12 disabled:opacity-50 disabled:cursor-not-allowed hover-scale"
           title="Send message"
         >
@@ -176,11 +312,12 @@ export function ChatInput({
       </form>
 
       {/* Voice Recording Indicator */}
-      {isRecording && (
-        <div className="mt-3 flex items-center justify-center animate-slide-in-up">
+      {recording.isRecording && (
+        <div className="mt-3 flex items-center justify-between animate-slide-in-up">
           <div className="flex items-center space-x-3 glass px-4 py-2 rounded-full">
             <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse-soft"></div>
             <span className="text-sm text-white/90">Recording...</span>
+            <span className="text-sm text-white/70">{formatDuration(recording.duration)}</span>
             <div className="flex space-x-1">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div
@@ -191,6 +328,13 @@ export function ChatInput({
               ))}
             </div>
           </div>
+          <button
+            onClick={cancelRecording}
+            className="text-white/60 hover:text-white hover-scale ml-3"
+            title="Cancel recording"
+          >
+            <X size={18} />
+          </button>
         </div>
       )}
 

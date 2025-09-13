@@ -11,7 +11,9 @@ import { QuickActions } from './components/QuickActions';
 import { useChat } from './hooks/useChat';
 import { useTheme } from './hooks/useTheme';
 import { useNotifications } from './hooks/useNotifications';
-import { Menu, X, Bot, AlertCircle, Sparkles, Zap, Settings, Search } from 'lucide-react';
+import { Attachment } from './types/chat';
+import { Menu, X, Bot, AlertCircle, Sparkles, Zap, Settings, Search, Wifi, WifiOff } from 'lucide-react';
+import { chatApi } from './services/chatApi';
 
 function App() {
   const [currentSessionId, setCurrentSessionId] = useState(() => 
@@ -20,6 +22,8 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [backendStatus, setBackendStatus] = useState<'online' | 'offline' | 'checking'>('checking');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const { resolvedTheme } = useTheme();
@@ -32,8 +36,44 @@ function App() {
     sendMessage,
     resetChat,
     updateMessageReaction,
+    regenerateResponse,
     clearError
   } = useChat(currentSessionId);
+
+  // Check backend status
+  useEffect(() => {
+    const checkBackendStatus = async () => {
+      setBackendStatus('checking');
+      const response = await chatApi.healthCheck();
+      setBackendStatus(response.success ? 'online' : 'offline');
+    };
+
+    checkBackendStatus();
+    const interval = setInterval(checkBackendStatus, 30000); // Check every 30 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Monitor online status
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      addNotification('Connection restored! 🌐', 'success');
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      addNotification('Connection lost. Some features may be unavailable.', 'warning');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [addNotification]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -64,7 +104,12 @@ function App() {
     addNotification('Chat deleted', 'info');
   };
 
-  const handleSendMessage = async (message: string) => {
+  const handleSendMessage = async (message: string, attachments?: Attachment[]) => {
+    if (!isOnline || backendStatus === 'offline') {
+      addNotification('Cannot send message while offline', 'error');
+      return;
+    }
+
     await sendMessage(message);
     clearError();
   };
@@ -84,6 +129,21 @@ function App() {
       handleSendMessage(prompt);
       setShowQuickActions(false);
     }
+  };
+
+  const getStatusColor = () => {
+    if (!isOnline) return 'text-red-400';
+    if (backendStatus === 'offline') return 'text-red-400';
+    if (backendStatus === 'checking') return 'text-yellow-400';
+    return 'text-green-400';
+  };
+
+  const getStatusText = () => {
+    if (!isOnline) return 'Offline';
+    if (backendStatus === 'offline') return 'Server offline';
+    if (backendStatus === 'checking') return 'Connecting...';
+    if (isTyping) return 'Thinking...';
+    return 'Ready to assist';
   };
 
   return (
@@ -129,10 +189,17 @@ function App() {
                       NovaChat
                     </h1>
                     <div className="flex items-center space-x-2">
-                      <div className="status-online"></div>
-                      <p className="text-sm text-white/80">
-                        {isTyping ? 'Thinking...' : 'Ready to assist'}
+                      <div className={`w-2 h-2 rounded-full ${
+                        isOnline && backendStatus === 'online' ? 'bg-green-400' : 'bg-red-400'
+                      } animate-pulse-soft`}></div>
+                      <p className={`text-sm ${getStatusColor()}`}>
+                        {getStatusText()}
                       </p>
+                      {!isOnline ? (
+                        <WifiOff size={14} className="text-red-400" />
+                      ) : (
+                        <Wifi size={14} className={getStatusColor()} />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -253,6 +320,7 @@ function App() {
                         onClick={() => handleSendMessage(prompt)}
                         className="btn-secondary text-sm hover-lift"
                         style={{animationDelay: `${0.4 + index * 0.1}s`}}
+                        disabled={!isOnline || backendStatus === 'offline'}
                       >
                         {prompt}
                       </button>
@@ -271,6 +339,7 @@ function App() {
                     <ChatMessage
                       message={message}
                       onReaction={updateMessageReaction}
+                      onRegenerate={regenerateResponse}
                     />
                   </div>
                 ))}
@@ -299,8 +368,13 @@ function App() {
           <div className="animate-slide-in-up">
             <ChatInput
               onSendMessage={handleSendMessage}
-              disabled={isLoading}
-              placeholder={isLoading ? "AI is thinking..." : "Type your message..."}
+              disabled={isLoading || !isOnline || backendStatus === 'offline'}
+              placeholder={
+                !isOnline ? "You're offline..." :
+                backendStatus === 'offline' ? "Server offline..." :
+                isLoading ? "AI is thinking..." : 
+                "Type your message..."
+              }
               isVoiceMode={isVoiceMode}
             />
           </div>

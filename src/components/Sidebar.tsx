@@ -13,7 +13,10 @@ import {
   Archive,
   Filter,
   Sparkles,
-  Bot
+  Bot,
+  Edit3,
+  Download,
+  Upload
 } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { chatApi } from '../services/chatApi';
@@ -39,6 +42,8 @@ export function Sidebar({
   const [searchQuery, setSearchQuery] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [filter, setFilter] = useState<'all' | 'starred' | 'archived'>('all');
+  const [editingSession, setEditingSession] = useState<string | null>(null);
+  const [editTitle, setEditTitle] = useState('');
   const { theme, changeTheme } = useTheme();
 
   useEffect(() => {
@@ -48,13 +53,20 @@ export function Sidebar({
   const loadSessions = async () => {
     const response = await chatApi.getAllSessions();
     if (response.success && response.data) {
-      setSessions(response.data);
+      const formattedSessions = response.data.map(session => ({
+        ...session,
+        createdAt: new Date(session.createdAt),
+        updatedAt: new Date(session.updatedAt)
+      }));
+      setSessions(formattedSessions);
     }
   };
 
   const filteredSessions = sessions.filter(session => {
     const matchesSearch = session.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = filter === 'all'; // For now, show all sessions
+    const matchesFilter = filter === 'all' || 
+                         (filter === 'starred' && session.isStarred) ||
+                         (filter === 'archived' && session.isArchived);
     return matchesSearch && matchesFilter;
   });
 
@@ -66,6 +78,50 @@ export function Sidebar({
     }
   };
 
+  const handleStarSession = (sessionId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSessions(prev => prev.map(session => 
+      session.id === sessionId 
+        ? { ...session, isStarred: !session.isStarred }
+        : session
+    ));
+  };
+
+  const handleEditTitle = (sessionId: string, currentTitle: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingSession(sessionId);
+    setEditTitle(currentTitle);
+  };
+
+  const saveTitle = async (sessionId: string) => {
+    if (editTitle.trim()) {
+      const response = await chatApi.updateSessionTitle(sessionId, editTitle.trim());
+      if (response.success) {
+        setSessions(prev => prev.map(session => 
+          session.id === sessionId 
+            ? { ...session, title: editTitle.trim() }
+            : session
+        ));
+      }
+    }
+    setEditingSession(null);
+    setEditTitle('');
+  };
+
+  const handleExportSession = async (sessionId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const response = await chatApi.exportSession(sessionId, 'json');
+    if (response.success && response.data) {
+      const blob = new Blob([JSON.stringify(response.data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `chat-${sessionId}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  };
+
   const themeOptions = [
     { value: 'light', icon: Sun, label: 'Light' },
     { value: 'dark', icon: Moon, label: 'Dark' },
@@ -74,8 +130,8 @@ export function Sidebar({
 
   const filterOptions = [
     { value: 'all', label: 'All Chats', count: sessions.length },
-    { value: 'starred', label: 'Starred', count: 0 },
-    { value: 'archived', label: 'Archived', count: 0 }
+    { value: 'starred', label: 'Starred', count: sessions.filter(s => s.isStarred).length },
+    { value: 'archived', label: 'Archived', count: sessions.filter(s => s.isArchived).length }
   ];
 
   return (
@@ -167,8 +223,10 @@ export function Sidebar({
                   <div
                     key={session.id}
                     onClick={() => {
-                      onSessionSelect(session.id);
-                      onClose();
+                      if (editingSession !== session.id) {
+                        onSessionSelect(session.id);
+                        onClose();
+                      }
                     }}
                     className={`group relative p-4 rounded-xl cursor-pointer transition-all duration-300 hover-lift animate-slide-in-left ${
                       currentSessionId === session.id
@@ -184,23 +242,38 @@ export function Sidebar({
                           : 'bg-white/10'
                       }`}>
                         <MessageSquare size={16} className="text-white" />
+                        {session.isStarred && (
+                          <Star size={12} className="absolute -top-1 -right-1 text-yellow-400 fill-current" />
+                        )}
                       </div>
                       
                       <div className="flex-1 min-w-0">
-                        <h3 className={`font-medium truncate mb-1 ${
-                          currentSessionId === session.id
-                            ? 'text-white'
-                            : 'text-white/90'
-                        }`}>
-                          {session.title}
-                        </h3>
+                        {editingSession === session.id ? (
+                          <input
+                            type="text"
+                            value={editTitle}
+                            onChange={(e) => setEditTitle(e.target.value)}
+                            onBlur={() => saveTitle(session.id)}
+                            onKeyPress={(e) => e.key === 'Enter' && saveTitle(session.id)}
+                            className="w-full bg-white/10 border border-white/20 rounded px-2 py-1 text-sm text-white"
+                            autoFocus
+                          />
+                        ) : (
+                          <h3 className={`font-medium truncate mb-1 ${
+                            currentSessionId === session.id
+                              ? 'text-white'
+                              : 'text-white/90'
+                          }`}>
+                            {session.title}
+                          </h3>
+                        )}
                         
                         <div className="flex items-center justify-between">
                           <p className="text-xs text-white/60">
-                            {session.messages?.length || 0} messages
+                            {session.messageCount || 0} messages
                           </p>
                           <p className="text-xs text-white/40">
-                            {new Date(session.updatedAt).toLocaleDateString()}
+                            {session.updatedAt.toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -209,14 +282,29 @@ export function Sidebar({
                     {/* Action Buttons */}
                     <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex space-x-1">
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          // Star functionality
-                        }}
-                        className="p-1 hover:bg-white/20 rounded text-white/60 hover:text-yellow-400 transition-colors hover-scale"
+                        onClick={(e) => handleStarSession(session.id, e)}
+                        className={`p-1 hover:bg-white/20 rounded transition-colors hover-scale ${
+                          session.isStarred ? 'text-yellow-400' : 'text-white/60 hover:text-yellow-400'
+                        }`}
                         title="Star conversation"
                       >
                         <Star size={14} />
+                      </button>
+
+                      <button
+                        onClick={(e) => handleEditTitle(session.id, session.title, e)}
+                        className="p-1 hover:bg-white/20 rounded text-white/60 hover:text-white transition-colors hover-scale"
+                        title="Edit title"
+                      >
+                        <Edit3 size={14} />
+                      </button>
+
+                      <button
+                        onClick={(e) => handleExportSession(session.id, e)}
+                        className="p-1 hover:bg-white/20 rounded text-white/60 hover:text-blue-400 transition-colors hover-scale"
+                        title="Export conversation"
+                      >
+                        <Download size={14} />
                       </button>
                       
                       <button
@@ -260,6 +348,20 @@ export function Sidebar({
                       <span className="text-xs">{option.label}</span>
                     </button>
                   ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-white/80 mb-2">Data</label>
+                <div className="space-y-2">
+                  <button className="w-full btn-secondary text-sm flex items-center justify-center space-x-2">
+                    <Upload size={16} />
+                    <span>Import Chats</span>
+                  </button>
+                  <button className="w-full btn-secondary text-sm flex items-center justify-center space-x-2">
+                    <Download size={16} />
+                    <span>Export All</span>
+                  </button>
                 </div>
               </div>
             </div>

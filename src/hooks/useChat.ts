@@ -22,12 +22,17 @@ export function useChat(sessionId: string) {
     try {
       const response = await chatApi.getHistory(sessionId);
       if (response.success && response.data) {
-        setMessages(response.data);
+        const formattedMessages = response.data.map(msg => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }));
+        setMessages(formattedMessages);
       } else {
-        setError(response.error || 'Failed to load chat history');
+        setMessages([]);
       }
     } catch (err) {
       setError('Network error occurred');
+      setMessages([]);
     } finally {
       setIsLoading(false);
     }
@@ -37,7 +42,7 @@ export function useChat(sessionId: string) {
     if (!content.trim() || isLoading) return;
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: `user-${Date.now()}`,
       content: content.trim(),
       sender: 'user',
       timestamp: new Date()
@@ -50,11 +55,17 @@ export function useChat(sessionId: string) {
     setError(null);
 
     try {
-      const response = await chatApi.sendMessage(sessionId, content.trim());
+      const response = await chatApi.sendMessage(sessionId, content.trim(), config);
       
       if (response.success && response.data) {
-        // Remove user message and reload to get both messages from backend
-        await loadHistory();
+        const assistantMessage: Message = {
+          id: `assistant-${Date.now()}`,
+          content: response.data.message,
+          sender: 'assistant',
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => [...prev, assistantMessage]);
       } else {
         setError(response.error || 'Failed to send message');
         // Remove the user message on error
@@ -67,7 +78,7 @@ export function useChat(sessionId: string) {
       setIsLoading(false);
       setIsTyping(false);
     }
-  }, [sessionId, isLoading, loadHistory]);
+  }, [sessionId, isLoading, config]);
 
   const resetChat = useCallback(async () => {
     setIsLoading(true);
@@ -93,6 +104,42 @@ export function useChat(sessionId: string) {
     ));
   }, []);
 
+  const regenerateResponse = useCallback(async (messageId: string) => {
+    const messageIndex = messages.findIndex(msg => msg.id === messageId);
+    if (messageIndex === -1 || messageIndex === 0) return;
+
+    const userMessage = messages[messageIndex - 1];
+    if (userMessage.sender !== 'user') return;
+
+    setIsLoading(true);
+    setIsTyping(true);
+    setError(null);
+
+    try {
+      const response = await chatApi.sendMessage(sessionId, userMessage.content, config);
+      
+      if (response.success && response.data) {
+        const newAssistantMessage: Message = {
+          id: `assistant-${Date.now()}`,
+          content: response.data.message,
+          sender: 'assistant',
+          timestamp: new Date()
+        };
+        
+        setMessages(prev => prev.map(msg => 
+          msg.id === messageId ? newAssistantMessage : msg
+        ));
+      } else {
+        setError(response.error || 'Failed to regenerate response');
+      }
+    } catch (err) {
+      setError('Network error occurred');
+    } finally {
+      setIsLoading(false);
+      setIsTyping(false);
+    }
+  }, [sessionId, messages, config]);
+
   return {
     messages,
     isLoading,
@@ -102,6 +149,7 @@ export function useChat(sessionId: string) {
     sendMessage,
     resetChat,
     updateMessageReaction,
+    regenerateResponse,
     setConfig,
     clearError: () => setError(null)
   };

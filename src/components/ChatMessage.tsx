@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Message } from '../types/chat';
+import { Message, Attachment } from '../types/chat';
 import { 
   ThumbsUp, 
   ThumbsDown, 
@@ -10,17 +10,23 @@ import {
   MoreHorizontal,
   Share,
   Bookmark,
-  RefreshCw
+  RefreshCw,
+  Download,
+  Eye,
+  Play,
+  Pause
 } from 'lucide-react';
 
 interface ChatMessageProps {
   message: Message;
   onReaction: (messageId: string, reaction: 'like' | 'dislike' | null) => void;
+  onRegenerate?: (messageId: string) => void;
 }
 
-export function ChatMessage({ message, onReaction }: ChatMessageProps) {
+export function ChatMessage({ message, onReaction, onRegenerate }: ChatMessageProps) {
   const [showActions, setShowActions] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [expandedAttachment, setExpandedAttachment] = useState<string | null>(null);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -35,6 +41,79 @@ export function ChatMessage({ message, onReaction }: ChatMessageProps) {
   const handleReaction = (reaction: 'like' | 'dislike') => {
     const newReaction = message.reaction === reaction ? null : reaction;
     onReaction(message.id, newReaction);
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'NovaChat Message',
+          text: message.content,
+        });
+      } catch (err) {
+        // Fallback to clipboard
+        copyToClipboard();
+      }
+    } else {
+      copyToClipboard();
+    }
+  };
+
+  const renderAttachment = (attachment: Attachment) => {
+    const isExpanded = expandedAttachment === attachment.id;
+
+    return (
+      <div key={attachment.id} className="mt-2 glass rounded-lg p-3 max-w-sm">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 rounded bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
+              {attachment.type === 'image' && <Eye size={16} className="text-white" />}
+              {attachment.type === 'document' && <Download size={16} className="text-white" />}
+              {attachment.type === 'audio' && <Play size={16} className="text-white" />}
+            </div>
+            <div>
+              <p className="text-sm font-medium text-white/90">{attachment.name}</p>
+              <p className="text-xs text-white/60">{(attachment.size / 1024).toFixed(1)} KB</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setExpandedAttachment(isExpanded ? null : attachment.id)}
+            className="text-white/60 hover:text-white hover-scale"
+          >
+            <Eye size={16} />
+          </button>
+        </div>
+
+        {isExpanded && (
+          <div className="animate-scale-in">
+            {attachment.type === 'image' && (
+              <img
+                src={attachment.url}
+                alt={attachment.name}
+                className="w-full rounded-lg max-h-64 object-cover"
+              />
+            )}
+            {attachment.type === 'audio' && (
+              <audio controls className="w-full">
+                <source src={attachment.url} type={attachment.mimeType} />
+              </audio>
+            )}
+            {attachment.type === 'document' && (
+              <div className="text-center py-4">
+                <p className="text-white/80 mb-2">Document preview not available</p>
+                <a
+                  href={attachment.url}
+                  download={attachment.name}
+                  className="btn-secondary text-sm"
+                >
+                  Download
+                </a>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -55,6 +134,11 @@ export function ChatMessage({ message, onReaction }: ChatMessageProps) {
                 <Clock size={12} className="mr-1" />
                 {formatTime(message.timestamp)}
               </div>
+              {message.metadata?.model && (
+                <span className="text-xs text-white/40 px-2 py-1 bg-white/10 rounded-full">
+                  {message.metadata.model}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -77,9 +161,35 @@ export function ChatMessage({ message, onReaction }: ChatMessageProps) {
               <span className="text-sm text-gray-500 ml-2">Thinking...</span>
             </div>
           ) : (
-            <div className="whitespace-pre-wrap leading-relaxed">
-              {message.content}
-            </div>
+            <>
+              <div className="whitespace-pre-wrap leading-relaxed">
+                {message.content}
+              </div>
+              
+              {/* Attachments */}
+              {message.attachments && message.attachments.length > 0 && (
+                <div className="mt-3">
+                  {message.attachments.map(renderAttachment)}
+                </div>
+              )}
+
+              {/* Metadata */}
+              {message.metadata && (
+                <div className="mt-2 pt-2 border-t border-white/10 text-xs text-white/60">
+                  <div className="flex items-center space-x-4">
+                    {message.metadata.tokens && (
+                      <span>{message.metadata.tokens} tokens</span>
+                    )}
+                    {message.metadata.processingTime && (
+                      <span>{message.metadata.processingTime}ms</span>
+                    )}
+                    {message.metadata.temperature && (
+                      <span>temp: {message.metadata.temperature}</span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           {/* Message Actions */}
@@ -119,6 +229,7 @@ export function ChatMessage({ message, onReaction }: ChatMessageProps) {
                     </button>
 
                     <button
+                      onClick={handleShare}
                       className="p-2 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors hover-scale"
                       title="Share"
                     >
@@ -132,12 +243,15 @@ export function ChatMessage({ message, onReaction }: ChatMessageProps) {
                       <Bookmark size={14} />
                     </button>
 
-                    <button
-                      className="p-2 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors hover-scale"
-                      title="Regenerate"
-                    >
-                      <RefreshCw size={14} />
-                    </button>
+                    {onRegenerate && (
+                      <button
+                        onClick={() => onRegenerate(message.id)}
+                        className="p-2 hover:bg-white/10 rounded-lg text-white/70 hover:text-white transition-colors hover-scale"
+                        title="Regenerate"
+                      >
+                        <RefreshCw size={14} />
+                      </button>
+                    )}
                   </>
                 )}
               </div>
