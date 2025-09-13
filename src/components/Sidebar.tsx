@@ -26,8 +26,7 @@ import {
   Bookmark,
   Tag,
   Calendar,
-  Activity,
-  X
+  Activity
 } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { chatApi } from '../services/chatApi';
@@ -385,9 +384,9 @@ export function Sidebar({
             {/* Close button for mobile */}
             <button
               onClick={onClose}
-              className="lg:hidden absolute top-4 right-4 p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300"
+              className="lg:hidden absolute top-6 right-6 p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300 z-10"
             >
-              <X size={20} />
+              ✕
             </button>
             
             <button

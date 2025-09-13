@@ -676,6 +676,17 @@ body {
   .message-assistant {
     border-radius: 16px 16px 16px 4px;
   }
+  
+  /* Ensure mobile toggle button is visible */
+  .lg\:hidden {
+    display: block !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .lg\:hidden {
+    display: none !important;
+  }
 }
 
 /* High contrast mode */

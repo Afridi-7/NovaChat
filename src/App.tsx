@@ -187,7 +187,7 @@ function App() {
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-2 hover:bg-white/10 rounded-xl transition-all duration-300 lg:hidden btn-secondary"
+                  className="p-2 hover:bg-white/10 rounded-xl transition-all duration-300 text-white hover:text-white lg:hidden"
                 >
                   {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
                 </button>
