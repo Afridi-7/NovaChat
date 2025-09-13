@@ -19,7 +19,7 @@ function App() {
   const [currentSessionId, setCurrentSessionId] = useState(() => 
     localStorage.getItem('currentSessionId') || Date.now().toString()
   );
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -39,6 +39,20 @@ function App() {
     regenerateResponse,
     clearError
   } = useChat(currentSessionId);
+
+  // Handle window resize for sidebar
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Check backend status
   useEffect(() => {

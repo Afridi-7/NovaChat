@@ -26,7 +26,8 @@ import {
   Bookmark,
   Tag,
   Calendar,
-  Activity
+  Activity,
+  X
 } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
 import { chatApi } from '../services/chatApi';
@@ -346,7 +347,7 @@ export function Sidebar({
   return (
     <>
       {/* Overlay for mobile */}
-      {isOpen && (
+      {isOpen && window.innerWidth < 1024 && (
         <div 
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden animate-fade-in"
           onClick={onClose}
@@ -354,21 +355,21 @@ export function Sidebar({
       )}
       
       {/* Sidebar */}
-      <div className={`fixed left-0 top-0 h-full w-80 transform transition-all duration-700 ease-out z-50 ${
+      <div className={`fixed left-0 top-0 h-full w-80 transform transition-all duration-500 ease-out z-50 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
-      } lg:translate-x-0 lg:static lg:z-auto`}>
+      } lg:relative lg:z-auto`}>
         
         {/* Sidebar Background with enhanced glass effect */}
-        <div className="h-full bg-gradient-to-b from-black/20 via-black/10 to-black/20 backdrop-blur-2xl border-r border-white/10 shadow-2xl">
+        <div className="h-full bg-gradient-to-b from-black/30 via-black/15 to-black/30 backdrop-blur-3xl border-r border-white/20 shadow-2xl">
           
           {/* Header */}
-          <div className="p-6 border-b border-white/10 bg-gradient-to-r from-white/5 to-transparent">
+          <div className="p-6 border-b border-white/20 bg-gradient-to-r from-white/10 to-transparent">
             <div className="flex items-center space-x-4 mb-6">
               <div className="relative">
                 <div className="avatar-assistant w-12 h-12 animate-float shadow-lg">
                   <Bot size={28} />
                 </div>
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse-soft border-2 border-white/20" />
+                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse-soft border-2 border-white/30 shadow-lg" />
               </div>
               <div>
                 <h2 className="text-xl font-bold text-white text-glow">
@@ -380,6 +381,14 @@ export function Sidebar({
                 </p>
               </div>
             </div>
+            
+            {/* Close button for mobile */}
+            <button
+              onClick={onClose}
+              className="lg:hidden absolute top-4 right-4 p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300"
+            >
+              <X size={20} />
+            </button>
             
             <button
               onClick={onNewChat}

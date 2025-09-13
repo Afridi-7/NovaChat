@@ -248,6 +248,79 @@ body {
 .typing-dot:nth-child(2) { animation-delay: 0.2s; }
 .typing-dot:nth-child(3) { animation-delay: 0.4s; }
 
+/* Enhanced typewriter cursor */
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.typewriter-cursor {
+  animation: blink 1s infinite;
+}
+
+/* Enhanced message bubbles */
+.message-user {
+  background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
+  color: white;
+  border-radius: 24px 24px 8px 24px;
+  padding: 18px 22px;
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.message-user::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s;
+}
+
+.message-user:hover::before {
+  left: 100%;
+}
+
+.message-assistant {
+  background: rgba(255, 255, 255, 0.98);
+  color: #1f2937;
+  border-radius: 24px 24px 24px 8px;
+  padding: 18px 22px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(20px);
+  position: relative;
+  overflow: hidden;
+}
+
+.dark .message-assistant {
+  background: rgba(31, 41, 55, 0.98);
+  color: #f9fafb;
+  border-color: rgba(75, 85, 99, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.message-assistant::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.message-assistant:hover::after {
+  opacity: 1;
+}
+
 /* Interactive elements */
 .btn-primary {
   background: var(--primary-gradient);
@@ -312,6 +385,37 @@ body {
   box-shadow: 
     0 8px 32px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Enhanced sidebar toggle animations */
+@keyframes slideInSidebar {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOutSidebar {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+.sidebar-enter {
+  animation: slideInSidebar 0.5s ease-out;
+}
+
+.sidebar-exit {
+  animation: slideOutSidebar 0.5s ease-out;
 }
 
 /* Sidebar specific animations */
@@ -423,59 +527,34 @@ body {
   border-color: rgba(255, 255, 255, 0.3);
 }
 
-/* Message bubble styles */
-.message-user {
-  background: var(--primary-gradient);
-  color: white;
-  border-radius: 24px 24px 8px 24px;
-  padding: 16px 20px;
-  box-shadow: var(--shadow-soft);
-  position: relative;
-  overflow: hidden;
-}
-
-.message-assistant {
-  background: rgba(255, 255, 255, 0.95);
-  color: #1f2937;
-  border-radius: 24px 24px 24px 8px;
-  padding: 16px 20px;
-  box-shadow: var(--shadow-soft);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.dark .message-assistant {
-  background: rgba(31, 41, 55, 0.95);
-  color: #f9fafb;
-  border-color: rgba(75, 85, 99, 0.3);
-}
-
 /* Avatar styles */
 .avatar-user {
   background: var(--secondary-gradient);
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-weight: 600;
-  box-shadow: var(--shadow-soft);
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(240, 147, 251, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  position: relative;
 }
 
 .avatar-assistant {
   background: var(--accent-gradient);
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-weight: 600;
-  box-shadow: var(--shadow-soft);
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(79, 172, 254, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.4);
   position: relative;
 }
 
@@ -486,10 +565,11 @@ body {
   left: -2px;
   right: -2px;
   bottom: -2px;
-  background: var(--success-gradient);
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
   border-radius: 50%;
   z-index: -1;
-  animation: pulse 2s ease-in-out infinite;
+  animation: pulse 3s ease-in-out infinite;
+  opacity: 0.6;
 }
 
 /* Sidebar styles */
