@@ -372,7 +372,7 @@ export function Sidebar({
               </div>
               <div>
                 <h2 className="text-xl font-bold text-white text-glow">
-                  NovaChat
+                  Afridi.ai
                 </h2>
                 <p className="text-sm text-white/60 flex items-center">
                   <Sparkles size={12} className="mr-1" />

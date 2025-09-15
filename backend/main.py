@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="NovaChat API",
+    title="Afridi.ai API",
     description="Advanced AI Chatbot with Session Management",
     version="1.0.0"
 )
@@ -86,7 +86,7 @@ def chat(session_id: str, user_input: str, config: Optional[Dict] = None) -> Dic
     if not conversation:
         # Fallback response for development
         return {
-            'message': f"Hello! I'm NovaChat. You said: '{user_input}'. I'm currently in development mode. Please configure your Google AI API key to enable full functionality.",
+            'message': f"Hello! I'm Afridi.ai. You said: '{user_input}'. I'm currently in development mode. Please configure your Google AI API key to enable full functionality.",
             'metadata': {
                 'model': 'development-mode',
                 'tokens': 0,
@@ -174,7 +174,7 @@ class UpdateTitleRequest(BaseModel):
 async def root():
     """Health check endpoint"""
     return {
-        "message": "🚀 NovaChat API is running!",
+        "message": "🚀 Afridi.ai API is running!",
         "version": "1.0.0",
         "status": "healthy",
         "langchain_status": "configured" if conversation else "development_mode",
@@ -390,13 +390,13 @@ async def export_session(session_id: str, format: str = "json"):
         
         if format == "txt":
             # Convert to plain text
-            text_content = f"NovaChat Conversation Export\n"
+            text_content = f"Afridi.ai Conversation Export\n"
             text_content += f"Session ID: {session_id}\n"
             text_content += f"Title: {metadata.get('title', 'Untitled')}\n"
             text_content += f"Created: {metadata.get('created_at', 'Unknown')}\n\n"
             
             for msg in export_data["messages"]:
-                sender = "You" if msg["sender"] == "user" else "NovaChat"
+                sender = "You" if msg["sender"] == "user" else "Afridi.ai"
                 text_content += f"{sender}: {msg['content']}\n\n"
             
             return ChatResponse(
@@ -477,7 +477,7 @@ async def upload_endpoint(session_id: str = Form(...), file: UploadFile = File(.
 # Development server
 if __name__ == "__main__":
     import uvicorn
-    logger.info("🚀 Starting NovaChat API server...")
+    logger.info("🚀 Starting Afridi.ai API server...")
     uvicorn.run(
         "main:app",
         host="0.0.0.0",

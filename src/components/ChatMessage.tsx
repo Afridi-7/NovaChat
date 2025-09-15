@@ -85,7 +85,7 @@ export function ChatMessage({ message, onReaction, onRegenerate }: ChatMessagePr
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'NovaChat Message',
+          title: 'Afridi.ai Message',
           text: message.content,
         });
       } catch (err) {
@@ -165,7 +165,7 @@ export function ChatMessage({ message, onReaction, onRegenerate }: ChatMessagePr
           <div className={`ml-4 ${message.sender === 'user' ? 'order-first mr-4 ml-0' : ''}`}>
             <div className="flex items-center space-x-3">
               <span className="text-sm font-semibold text-white/95">
-                {message.sender === 'user' ? 'You' : 'NovaChat'}
+                {message.sender === 'user' ? 'You' : 'Afridi.ai'}
               </span>
               <div className="flex items-center text-xs text-white/70">
                 <Clock size={12} className="mr-1" />

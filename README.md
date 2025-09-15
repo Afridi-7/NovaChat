@@ -1,4 +1,4 @@
-# 🌟 NovaChat - Advanced AI Assistant
+# 🌟 Afridi.ai - Advanced AI Assistant
 
 A beautiful, modern, and feature-rich chatbot application powered by Google's Gemini AI with session-based conversations, real-time messaging, and an intuitive user interface.
 
@@ -80,7 +80,7 @@ src/
 ### 1. Clone and Setup
 ```bash
 git clone <repository-url>
-cd novachat
+cd Afridi.ai
 ```
 
 ### 2. Backend Setup
@@ -129,7 +129,7 @@ http://localhost:8000/api/v1
 ```http
 GET /
 Response: {
-  "message": "🚀 NovaChat API is running!",
+  "message": "🚀 Afridi.ai API is running!",
   "version": "1.0.0",
   "status": "healthy",
   "langchain_status": "configured"
@@ -225,13 +225,13 @@ Response: {
 
 ### AI Personality Customization
 
-Edit `backend/template.json` to customize NovaChat's personality:
+Edit `backend/template.json` to customize Afridi.ai's personality:
 
 ```json
 {
   "_type": "prompt",
   "input_variables": ["input", "history"],
-  "template": "You are NovaChat, an advanced AI assistant with a friendly, intelligent, and helpful personality...\n\nConversation History:\n{history}\n\nHuman: {input}\n\nNovaChat:"
+  "template": "You are Afridi.ai, an advanced AI assistant with a friendly, intelligent, and helpful personality...\n\nConversation History:\n{history}\n\nHuman: {input}\n\nAfridi.ai:"
 }
 ```
 
@@ -258,7 +258,7 @@ CORS_ORIGINS=http://localhost:5173,http://localhost:3000
 ```env
 # API Configuration
 VITE_API_BASE_URL=http://localhost:8000/api/v1
-VITE_APP_NAME=NovaChat
+VITE_APP_NAME=Afridi.ai
 VITE_APP_VERSION=1.0.0
 
 # Feature Flags
@@ -344,7 +344,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 #### Google Cloud Run
 ```bash
-gcloud run deploy novachat-api \
+gcloud run deploy Afridi.ai-api \
   --source . \
   --platform managed \
   --region us-central1 \
@@ -459,10 +459,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Documentation**: Check this README and inline code comments
 - **Issues**: Open a GitHub issue for bugs or feature requests
 - **Discussions**: Use GitHub Discussions for questions and ideas
-- **Email**: contact@novachat.ai (if applicable)
+- **Email**: qkafridi7@gmail.com
+- **Phone-No**: +36702819179
 
 ---
 
 **Built with ❤️ using React, TypeScript, FastAPI, and Google AI**
 
-*NovaChat - Where conversations meet intelligence*
+*Afridi.ai - Where conversations meet intelligence*
