@@ -346,32 +346,33 @@ export function Sidebar({
   return (
     <>
       {/* Overlay for mobile */}
-      {isOpen && window.innerWidth < 1024 && (
+      {isOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden animate-fade-in"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-fade-in lg:hidden"
           onClick={onClose}
         />
       )}
       
       {/* Sidebar */}
-      <div className={`fixed left-0 top-0 h-full w-80 transform transition-all duration-500 ease-out z-50 ${
+      <div className={`fixed left-0 top-0 h-full transform transition-all duration-500 ease-out z-50 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
-      } lg:relative lg:z-auto`}>
+      } lg:relative lg:z-auto lg:translate-x-0 sidebar-mobile sm:sidebar-tablet lg:sidebar-desktop`}>
         
         {/* Sidebar Background with enhanced glass effect */}
         <div className="h-full bg-gradient-to-b from-black/30 via-black/15 to-black/30 backdrop-blur-3xl border-r border-white/20 shadow-2xl">
           
           {/* Header */}
-          <div className="p-6 border-b border-white/20 bg-gradient-to-r from-white/10 to-transparent">
-            <div className="flex items-center space-x-4 mb-6">
+          <div className="p-4 sm:p-6 border-b border-white/20 bg-gradient-to-r from-white/10 to-transparent">
+            <div className="flex items-center space-x-3 sm:space-x-4 mb-4 sm:mb-6">
               <div className="relative">
-                <div className="avatar-assistant w-12 h-12 animate-float shadow-lg">
-                  <Bot size={28} />
+                <div className="avatar-assistant w-10 h-10 sm:w-12 sm:h-12 animate-float shadow-lg">
+                  <Bot size={20} className="sm:hidden" />
+                  <Bot size={28} className="hidden sm:block" />
                 </div>
                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse-soft border-2 border-white/30 shadow-lg" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white text-glow">
+                <h2 className="text-lg sm:text-xl font-bold text-white text-glow">
                   NovaChat
                 </h2>
                 <p className="text-sm text-white/60 flex items-center">
@@ -384,31 +385,31 @@ export function Sidebar({
             {/* Close button for mobile */}
             <button
               onClick={onClose}
-              className="lg:hidden absolute top-6 right-6 p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300 z-10"
+              className="lg:hidden absolute top-4 right-4 p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all duration-300 z-10"
             >
               ✕
             </button>
             
             <button
               onClick={onNewChat}
-              className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold py-3 px-4 rounded-2xl transition-all duration-300 hover-lift shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 group"
+              className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white font-semibold py-2.5 sm:py-3 px-3 sm:px-4 rounded-2xl transition-all duration-300 hover-lift shadow-lg hover:shadow-xl flex items-center justify-center space-x-2 group text-sm sm:text-base"
             >
-              <Plus size={20} className="group-hover:rotate-90 transition-transform duration-300" />
+              <Plus size={18} className="group-hover:rotate-90 transition-transform duration-300" />
               <span>New Chat</span>
-              <Zap size={16} className="ml-auto opacity-80" />
+              <Zap size={14} className="ml-auto opacity-80" />
             </button>
           </div>
 
           {/* Quick Stats */}
           {showQuickStats && (
-            <div className="p-4 border-b border-white/10">
-              <div className="grid grid-cols-2 gap-3">
+            <div className="p-3 sm:p-4 border-b border-white/10">
+              <div className="grid grid-cols-2 gap-2 sm:gap-3">
                 <div className="glass rounded-xl p-3 hover-lift">
                   <div className="flex items-center space-x-2">
                     <TrendingUp size={16} className="text-green-400" />
                     <div>
-                      <p className="text-xs text-white/60">Total Chats</p>
-                      <p className="text-lg font-bold text-white">{quickStats.totalChats}</p>
+                      <p className="text-xs text-white/60">Chats</p>
+                      <p className="text-sm sm:text-lg font-bold text-white">{quickStats.totalChats}</p>
                     </div>
                   </div>
                 </div>
@@ -416,8 +417,8 @@ export function Sidebar({
                   <div className="flex items-center space-x-2">
                     <Activity size={16} className="text-blue-400" />
                     <div>
-                      <p className="text-xs text-white/60">Messages</p>
-                      <p className="text-lg font-bold text-white">{quickStats.totalMessages}</p>
+                      <p className="text-xs text-white/60">Msgs</p>
+                      <p className="text-sm sm:text-lg font-bold text-white">{quickStats.totalMessages}</p>
                     </div>
                   </div>
                 </div>
@@ -426,7 +427,7 @@ export function Sidebar({
           )}
 
           {/* Search and Filters */}
-          <div className="p-4 border-b border-white/10 space-y-4">
+          <div className="p-3 sm:p-4 border-b border-white/10 space-y-3 sm:space-y-4">
             <div className="relative group">
               <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/40 group-focus-within:text-white/60 transition-colors" />
               <input
@@ -434,7 +435,7 @@ export function Sidebar({
                 placeholder="Search conversations..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white/10 border border-white/20 rounded-xl pl-10 pr-4 py-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-400/50 transition-all duration-300"
+                className="w-full bg-white/10 border border-white/20 rounded-xl pl-10 pr-4 py-2.5 sm:py-3 text-sm sm:text-base text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-400/50 transition-all duration-300"
               />
             </div>
 
@@ -447,7 +448,7 @@ export function Sidebar({
                 <button
                   key={option.value}
                   onClick={() => setFilter(option.value as any)}
-                  className={`flex-1 px-3 py-2 text-xs rounded-lg transition-all duration-300 hover-scale ${
+                  className={`flex-1 px-2 sm:px-3 py-1.5 sm:py-2 text-xs rounded-lg transition-all duration-300 hover-scale ${
                     filter === option.value
                       ? 'bg-gradient-to-r from-purple-500/30 to-blue-500/30 text-white border border-purple-400/30'
                       : 'text-white/60 hover:text-white hover:bg-white/10'
@@ -455,7 +456,7 @@ export function Sidebar({
                 >
                   {option.label}
                   {option.count > 0 && (
-                    <span className="ml-1 px-1.5 py-0.5 bg-white/20 rounded-full text-xs">
+                    <span className="ml-1 px-1 sm:px-1.5 py-0.5 bg-white/20 rounded-full text-xs">
                       {option.count}
                     </span>
                   )}
@@ -466,23 +467,24 @@ export function Sidebar({
 
           {/* Chat Sessions */}
           <div className="flex-1 overflow-y-auto custom-scrollbar">
-            <div className="p-4">
+            <div className="p-3 sm:p-4">
               {filteredSessions.length === 0 ? (
-                <div className="text-center py-12 animate-scale-in">
-                  <div className="w-20 h-20 mx-auto mb-6 glass rounded-2xl flex items-center justify-center">
-                    <MessageSquare size={40} className="text-white/40" />
+                <div className="text-center py-8 sm:py-12 animate-scale-in">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 sm:mb-6 glass rounded-2xl flex items-center justify-center">
+                    <MessageSquare size={32} className="text-white/40 sm:hidden" />
+                    <MessageSquare size={40} className="text-white/40 hidden sm:block" />
                   </div>
-                  <h3 className="text-lg font-semibold text-white/80 mb-2">No conversations yet</h3>
-                  <p className="text-white/60 text-sm mb-4">Start chatting to see your history</p>
+                  <h3 className="text-base sm:text-lg font-semibold text-white/80 mb-2">No conversations yet</h3>
+                  <p className="text-white/60 text-xs sm:text-sm mb-4">Start chatting to see your history</p>
                   <button
                     onClick={onNewChat}
-                    className="btn-secondary px-6 py-2 text-sm hover-lift"
+                    className="btn-secondary px-4 sm:px-6 py-2 text-xs sm:text-sm hover-lift"
                   >
                     Start First Chat
                   </button>
                 </div>
               ) : (
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   {renderSection('Recent', recentSessions, 'recent', <Clock size={16} />)}
                   {renderSection('Starred', starredSessions, 'starred', <Star size={16} />)}
                   {renderSection('Archived', archivedSessions, 'archived', <Archive size={16} />)}
@@ -493,13 +495,13 @@ export function Sidebar({
 
           {/* Settings Panel */}
           {showSettings && (
-            <div className="absolute bottom-20 left-4 right-4 card-modern animate-scale-in z-50 max-h-96 overflow-y-auto">
+            <div className="absolute bottom-16 sm:bottom-20 left-3 right-3 sm:left-4 sm:right-4 card-modern animate-scale-in z-50 max-h-80 sm:max-h-96 overflow-y-auto">
               <h3 className="font-semibold text-white mb-4 flex items-center">
                 <Settings size={18} className="mr-2" />
                 Settings
               </h3>
               
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-white/80 mb-3">Theme</label>
                   <div className="grid grid-cols-3 gap-2">
@@ -507,13 +509,13 @@ export function Sidebar({
                       <button
                         key={option.value}
                         onClick={() => changeTheme(option.value as any)}
-                        className={`flex flex-col items-center p-3 rounded-xl transition-all duration-300 hover-scale ${
+                        className={`flex flex-col items-center p-2 sm:p-3 rounded-xl transition-all duration-300 hover-scale ${
                           theme === option.value
                             ? 'bg-gradient-to-r from-purple-500/30 to-blue-500/30 text-white border border-purple-400/30'
                             : 'text-white/60 hover:text-white hover:bg-white/10'
                         }`}
                       >
-                        <option.icon size={20} className="mb-2" />
+                        <option.icon size={18} className="mb-1 sm:mb-2" />
                         <span className="text-xs font-medium">{option.label}</span>
                       </button>
                     ))}
@@ -525,7 +527,7 @@ export function Sidebar({
                   <div className="space-y-2">
                     <button
                       onClick={() => setShowQuickStats(!showQuickStats)}
-                      className={`w-full flex items-center justify-between p-3 rounded-xl transition-all duration-300 ${
+                      className={`w-full flex items-center justify-between p-2 sm:p-3 rounded-xl transition-all duration-300 ${
                         showQuickStats ? 'bg-white/10' : 'hover:bg-white/5'
                       }`}
                     >
@@ -555,18 +557,18 @@ export function Sidebar({
           )}
 
           {/* Footer */}
-          <div className="p-4 border-t border-white/10 bg-gradient-to-r from-transparent to-white/5">
+          <div className="p-3 sm:p-4 border-t border-white/10 bg-gradient-to-r from-transparent to-white/5">
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className="w-full flex items-center space-x-3 p-3 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300 hover-lift group"
+              className="w-full flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300 hover-lift group"
             >
               <div className="relative">
-                <Settings size={18} className="group-hover:rotate-90 transition-transform duration-500" />
+                <Settings size={16} className="group-hover:rotate-90 transition-transform duration-500" />
                 <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse-soft" />
               </div>
               <span className="font-medium">Settings</span>
-              <div className="ml-auto flex items-center space-x-2">
-                <span className="text-xs text-white/50">v1.0</span>
+              <div className="ml-auto flex items-center space-x-1 sm:space-x-2">
+                <span className="text-xs text-white/50 hidden sm:inline">v1.0</span>
                 <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
               </div>
             </button>

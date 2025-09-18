@@ -19,7 +19,7 @@ function App() {
   const [currentSessionId, setCurrentSessionId] = useState(() => 
     localStorage.getItem('currentSessionId') || Date.now().toString()
   );
-  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 1024);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -43,14 +43,16 @@ function App() {
   // Handle window resize for sidebar
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 1024) {
-        setSidebarOpen(true);
-      } else {
+      if (window.innerWidth < 1024) {
         setSidebarOpen(false);
       }
     };
 
     window.addEventListener('resize', handleResize);
+    
+    // Set initial sidebar state based on screen size
+    handleResize();
+    
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -162,7 +164,7 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className={`flex h-screen relative overflow-hidden ${resolvedTheme}`}>
+      <div className={`flex h-screen relative overflow-hidden ${resolvedTheme} bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900`}>
         {/* Floating Background Elements */}
         <FloatingElements />
         
@@ -180,68 +182,70 @@ function App() {
         />
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col relative">
+        <div className="flex-1 flex flex-col relative min-w-0">
           {/* Header */}
-          <header className="glass-strong border-b border-white/10 p-4 animate-slide-in-up">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
+          <header className="glass-strong border-b border-white/10 p-3 sm:p-4 animate-slide-in-up">
+            <div className="flex items-center justify-between max-w-full">
+              <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
                 <button
                   onClick={() => setSidebarOpen(!sidebarOpen)}
-                  className="p-2 hover:bg-white/10 rounded-xl transition-all duration-300 text-white hover:text-white lg:hidden"
+                  className="p-2 hover:bg-white/10 rounded-xl transition-all duration-300 text-white hover:text-white flex-shrink-0"
                 >
-                  {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+                  {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
                 </button>
                 
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 sm:space-x-4 min-w-0">
                   <div className="relative">
-                    <div className="avatar-assistant animate-float">
-                      <Bot size={24} />
+                    <div className="avatar-assistant animate-float w-8 h-8 sm:w-10 sm:h-10">
+                      <Bot size={16} className="sm:hidden" />
+                      <Bot size={20} className="hidden sm:block" />
                     </div>
                   </div>
-                  <div>
-                    <h1 className="text-xl font-bold text-white text-glow">
+                  <div className="min-w-0">
+                    <h1 className="text-lg sm:text-xl font-bold text-white text-glow truncate">
                       NovaChat
                     </h1>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-1 sm:space-x-2">
                       <div className={`w-2 h-2 rounded-full ${
                         isOnline && backendStatus === 'online' ? 'bg-green-400' : 'bg-red-400'
                       } animate-pulse-soft`}></div>
-                      <p className={`text-sm ${getStatusColor()}`}>
+                      <p className={`text-xs sm:text-sm ${getStatusColor()} truncate`}>
                         {getStatusText()}
                       </p>
                       {!isOnline ? (
-                        <WifiOff size={14} className="text-red-400" />
+                        <WifiOff size={12} className="text-red-400 flex-shrink-0" />
                       ) : (
-                        <Wifi size={14} className={getStatusColor()} />
+                        <Wifi size={12} className={`${getStatusColor()} flex-shrink-0`} />
                       )}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
                 <button
                   onClick={() => setShowQuickActions(!showQuickActions)}
-                  className="btn-secondary p-2 hover-scale"
+                  className="btn-secondary p-2 hover-scale hidden sm:flex"
                   title="Quick Actions"
                 >
-                  <Zap size={18} />
+                  <Zap size={16} />
                 </button>
                 
                 <button
                   onClick={() => setIsVoiceMode(!isVoiceMode)}
-                  className={`btn-secondary p-2 hover-scale ${isVoiceMode ? 'bg-white/20' : ''}`}
+                  className={`btn-secondary p-2 hover-scale hidden sm:flex ${isVoiceMode ? 'bg-white/20' : ''}`}
                   title="Voice Mode"
                 >
-                  <Sparkles size={18} />
+                  <Sparkles size={16} />
                 </button>
 
                 {messages.length > 0 && (
                   <button
                     onClick={resetChat}
-                    className="btn-secondary px-4 py-2 text-sm hover-lift"
+                    className="btn-secondary px-2 sm:px-4 py-2 text-xs sm:text-sm hover-lift"
                   >
-                    Clear Chat
+                    <span className="hidden sm:inline">Clear Chat</span>
+                    <span className="sm:hidden">Clear</span>
                   </button>
                 )}
               </div>
@@ -261,7 +265,7 @@ function App() {
 
           {/* Error Display */}
           {error && (
-            <div className="mx-4 mt-4 notification animate-slide-in-up">
+            <div className="mx-3 sm:mx-4 mt-4 notification animate-slide-in-up">
               <div className="flex items-center space-x-2">
                 <AlertCircle size={18} className="text-red-500" />
                 <span className="text-red-700 dark:text-red-300">{error}</span>
@@ -276,52 +280,54 @@ function App() {
           )}
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-6">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4 sm:space-y-6">
             {isLoading && messages.length === 0 ? (
               <div className="flex items-center justify-center h-32">
                 <LoadingSpinner size="lg" />
               </div>
             ) : messages.length === 0 ? (
               <div className="flex items-center justify-center h-full">
-                <div className="text-center max-w-2xl animate-scale-in">
+                <div className="text-center max-w-2xl animate-scale-in px-4">
                   <div className="relative mb-8">
-                    <div className="avatar-assistant w-24 h-24 mx-auto animate-float">
-                      <Bot size={48} />
+                    <div className="avatar-assistant w-16 h-16 sm:w-24 sm:h-24 mx-auto animate-float">
+                      <Bot size={32} className="sm:hidden" />
+                      <Bot size={48} className="hidden sm:block" />
                     </div>
-                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center animate-pulse-soft">
-                      <Sparkles size={16} className="text-white" />
+                    <div className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 w-6 h-6 sm:w-8 sm:h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center animate-pulse-soft">
+                      <Sparkles size={12} className="text-white sm:hidden" />
+                      <Sparkles size={16} className="text-white hidden sm:block" />
                     </div>
                   </div>
                   
-                  <h2 className="text-4xl font-bold text-white mb-4 text-glow">
+                  <h2 className="text-2xl sm:text-4xl font-bold text-white mb-4 text-glow">
                     Welcome to NovaChat
                   </h2>
-                  <p className="text-white/80 mb-8 text-lg leading-relaxed">
+                  <p className="text-white/80 mb-6 sm:mb-8 text-base sm:text-lg leading-relaxed">
                     Your advanced AI companion is ready to assist! Experience intelligent, 
                     contextual conversations powered by cutting-edge AI technology.
                   </p>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 sm:mb-8">
                     <div className="card-modern hover-lift animate-slide-in-left" style={{animationDelay: '0.1s'}}>
                       <div className="text-2xl mb-3">💡</div>
                       <h3 className="font-semibold text-white mb-2">Ask Anything</h3>
-                      <p className="text-white/70 text-sm">General questions, explanations, advice</p>
+                      <p className="text-white/70 text-xs sm:text-sm">General questions, explanations, advice</p>
                     </div>
                     
                     <div className="card-modern hover-lift animate-slide-in-up" style={{animationDelay: '0.2s'}}>
                       <div className="text-2xl mb-3">✨</div>
                       <h3 className="font-semibold text-white mb-2">Creative Help</h3>
-                      <p className="text-white/70 text-sm">Writing, brainstorming, content creation</p>
+                      <p className="text-white/70 text-xs sm:text-sm">Writing, brainstorming, content creation</p>
                     </div>
                     
-                    <div className="card-modern hover-lift animate-slide-in-right" style={{animationDelay: '0.3s'}}>
+                    <div className="card-modern hover-lift animate-slide-in-right sm:col-span-2 lg:col-span-1" style={{animationDelay: '0.3s'}}>
                       <div className="text-2xl mb-3">🔧</div>
                       <h3 className="font-semibold text-white mb-2">Problem Solving</h3>
-                      <p className="text-white/70 text-sm">Code help, debugging, technical issues</p>
+                      <p className="text-white/70 text-xs sm:text-sm">Code help, debugging, technical issues</p>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap justify-center gap-3">
+                  <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
                     {[
                       "Explain quantum computing",
                       "Write a creative story",
@@ -332,7 +338,7 @@ function App() {
                       <button
                         key={index}
                         onClick={() => handleSendMessage(prompt)}
-                        className="btn-secondary text-sm hover-lift"
+                        className="btn-secondary text-xs sm:text-sm hover-lift px-3 py-2"
                         style={{animationDelay: `${0.4 + index * 0.1}s`}}
                         disabled={!isOnline || backendStatus === 'offline'}
                       >
@@ -347,7 +353,7 @@ function App() {
                 {messages.map((message, index) => (
                   <div
                     key={message.id}
-                    className="animate-slide-in-up"
+                    className="animate-slide-in-up message-container"
                     style={{animationDelay: `${index * 0.1}s`}}
                   >
                     <ChatMessage
@@ -359,7 +365,7 @@ function App() {
                 ))}
                 
                 {isTyping && (
-                  <div className="animate-slide-in-up">
+                  <div className="animate-slide-in-up message-container">
                     <ChatMessage
                       message={{
                         id: 'typing',

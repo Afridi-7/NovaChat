@@ -154,25 +154,35 @@ export function ChatMessage({ message, onReaction, onRegenerate }: ChatMessagePr
   };
 
   return (
-    <div className={`flex w-full mb-8 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-      <div className={`max-w-[85%] group relative ${message.sender === 'user' ? 'order-2' : 'order-1'}`}>
+    <div className={`flex w-full mb-6 sm:mb-8 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+      <div className={`max-w-[95%] sm:max-w-[85%] group relative ${message.sender === 'user' ? 'order-2' : 'order-1'}`}>
         
         {/* Avatar */}
-        <div className={`flex items-center mb-3 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-          <div className={`${message.sender === 'user' ? 'avatar-user' : 'avatar-assistant'} hover-scale transition-all duration-300 shadow-lg`}>
-            {message.sender === 'user' ? <User size={22} /> : <Bot size={22} />}
+        <div className={`flex items-center mb-2 sm:mb-3 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+          <div className={`${message.sender === 'user' ? 'avatar-user' : 'avatar-assistant'} hover-scale transition-all duration-300 shadow-lg w-8 h-8 sm:w-10 sm:h-10`}>
+            {message.sender === 'user' ? (
+              <>
+                <User size={18} className="sm:hidden" />
+                <User size={22} className="hidden sm:block" />
+              </>
+            ) : (
+              <>
+                <Bot size={18} className="sm:hidden" />
+                <Bot size={22} className="hidden sm:block" />
+              </>
+            )}
           </div>
-          <div className={`ml-4 ${message.sender === 'user' ? 'order-first mr-4 ml-0' : ''}`}>
+          <div className={`ml-3 sm:ml-4 ${message.sender === 'user' ? 'order-first mr-3 sm:mr-4 ml-0' : ''}`}>
             <div className="flex items-center space-x-3">
-              <span className="text-sm font-semibold text-white/95">
+              <span className="text-xs sm:text-sm font-semibold text-white/95">
                 {message.sender === 'user' ? 'You' : 'NovaChat'}
               </span>
-              <div className="flex items-center text-xs text-white/70">
+              <div className="flex items-center text-xs text-white/70 hidden sm:flex">
                 <Clock size={12} className="mr-1" />
                 {formatTime(message.timestamp)}
               </div>
               {message.metadata?.model && (
-                <span className="text-xs text-white/50 px-2 py-1 bg-white/10 rounded-full border border-white/20">
+                <span className="text-xs text-white/50 px-2 py-1 bg-white/10 rounded-full border border-white/20 hidden sm:inline">
                   {message.metadata.model}
                 </span>
               )}
@@ -199,7 +209,7 @@ export function ChatMessage({ message, onReaction, onRegenerate }: ChatMessagePr
             </div>
           ) : (
             <>
-              <div className="whitespace-pre-wrap leading-relaxed text-[15px]">
+              <div className="whitespace-pre-wrap leading-relaxed text-sm sm:text-[15px]">
                 {message.sender === 'assistant' ? (
                   <span className="relative">
                     {displayedContent}
@@ -222,7 +232,7 @@ export function ChatMessage({ message, onReaction, onRegenerate }: ChatMessagePr
               {/* Metadata */}
               {message.metadata && isTypingComplete && (
                 <div className="mt-3 pt-3 border-t border-white/10 text-xs text-white/60 animate-slide-in-up">
-                  <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2 sm:space-x-4 flex-wrap">
                     {message.metadata.tokens && (
                       <span className="flex items-center space-x-1">
                         <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
@@ -238,7 +248,8 @@ export function ChatMessage({ message, onReaction, onRegenerate }: ChatMessagePr
                     {message.metadata.temperature && (
                       <span className="flex items-center space-x-1">
                         <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
-                        <span>temp: {message.metadata.temperature}</span>
+                        <span className="hidden sm:inline">temp: {message.metadata.temperature}</span>
+                        <span className="sm:hidden">T: {message.metadata.temperature}</span>
                       </span>
                     )}
                   </div>
@@ -250,61 +261,61 @@ export function ChatMessage({ message, onReaction, onRegenerate }: ChatMessagePr
           {/* Message Actions */}
           {!message.isTyping && showActions && isTypingComplete && (
             <div className={`absolute top-3 ${
-              message.sender === 'user' ? '-left-20' : '-right-20'
+              message.sender === 'user' ? '-left-16 sm:-left-20' : '-right-16 sm:-right-20'
             } opacity-0 group-hover:opacity-100 transition-all duration-300 animate-scale-in z-10`}>
               <div className="flex flex-col space-y-1 p-2 glass-strong rounded-xl shadow-xl border border-white/20">
                 <button
                   onClick={copyToClipboard}
-                  className="p-2.5 hover:bg-white/15 rounded-lg text-white/80 hover:text-white transition-all duration-300 hover-scale group/btn"
+                  className="p-2 sm:p-2.5 hover:bg-white/15 rounded-lg text-white/80 hover:text-white transition-all duration-300 hover-scale group/btn"
                   title={copied ? "Copied!" : "Copy message"}
                 >
-                  <Copy size={14} className={copied ? "text-green-400" : ""} />
+                  <Copy size={12} className={`sm:w-4 sm:h-4 ${copied ? "text-green-400" : ""}`} />
                 </button>
                 
                 {message.sender === 'assistant' && (
                   <>
                     <button
                       onClick={() => handleReaction('like')}
-                      className={`p-2.5 hover:bg-white/15 rounded-lg transition-all duration-300 hover-scale ${
+                      className={`p-2 sm:p-2.5 hover:bg-white/15 rounded-lg transition-all duration-300 hover-scale ${
                         message.reaction === 'like' ? 'text-green-400 bg-green-400/20' : 'text-white/80 hover:text-white'
                       }`}
                       title="Like"
                     >
-                      <ThumbsUp size={14} />
+                      <ThumbsUp size={12} className="sm:w-4 sm:h-4" />
                     </button>
                     
                     <button
                       onClick={() => handleReaction('dislike')}
-                      className={`p-2.5 hover:bg-white/15 rounded-lg transition-all duration-300 hover-scale ${
+                      className={`p-2 sm:p-2.5 hover:bg-white/15 rounded-lg transition-all duration-300 hover-scale ${
                         message.reaction === 'dislike' ? 'text-red-400 bg-red-400/20' : 'text-white/80 hover:text-white'
                       }`}
                       title="Dislike"
                     >
-                      <ThumbsDown size={14} />
+                      <ThumbsDown size={12} className="sm:w-4 sm:h-4" />
                     </button>
 
                     <button
                       onClick={handleShare}
-                      className="p-2.5 hover:bg-white/15 rounded-lg text-white/80 hover:text-white transition-all duration-300 hover-scale"
+                      className="p-2 sm:p-2.5 hover:bg-white/15 rounded-lg text-white/80 hover:text-white transition-all duration-300 hover-scale hidden sm:flex"
                       title="Share"
                     >
-                      <Share size={14} />
+                      <Share size={12} className="sm:w-4 sm:h-4" />
                     </button>
 
                     <button
-                      className="p-2.5 hover:bg-white/15 rounded-lg text-white/80 hover:text-white transition-all duration-300 hover-scale"
+                      className="p-2 sm:p-2.5 hover:bg-white/15 rounded-lg text-white/80 hover:text-white transition-all duration-300 hover-scale hidden sm:flex"
                       title="Bookmark"
                     >
-                      <Bookmark size={14} />
+                      <Bookmark size={12} className="sm:w-4 sm:h-4" />
                     </button>
 
                     {onRegenerate && (
                       <button
                         onClick={() => onRegenerate(message.id)}
-                        className="p-2.5 hover:bg-white/15 rounded-lg text-white/80 hover:text-white transition-all duration-300 hover-scale"
+                        className="p-2 sm:p-2.5 hover:bg-white/15 rounded-lg text-white/80 hover:text-white transition-all duration-300 hover-scale"
                         title="Regenerate"
                       >
-                        <RefreshCw size={14} />
+                        <RefreshCw size={12} className="sm:w-4 sm:h-4" />
                       </button>
                     )}
                   </>
@@ -316,7 +327,7 @@ export function ChatMessage({ message, onReaction, onRegenerate }: ChatMessagePr
 
         {/* Reaction Display */}
         {message.reaction && !message.isTyping && (
-          <div className={`flex mt-3 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+          <div className={`flex mt-2 sm:mt-3 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className="flex items-center space-x-2 px-3 py-1.5 glass rounded-full text-xs animate-scale-in shadow-lg">
               {message.reaction === 'like' ? (
                 <ThumbsUp size={12} className="text-green-400" />
