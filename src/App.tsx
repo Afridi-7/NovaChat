@@ -12,7 +12,7 @@ import { useChat } from './hooks/useChat';
 import { useTheme } from './hooks/useTheme';
 import { useNotifications } from './hooks/useNotifications';
 import { Attachment } from './types/chat';
-import { Menu, X, Bot, AlertCircle, Sparkles, Zap, Settings, Search, Wifi, WifiOff } from 'lucide-react';
+import { Menu, X, Bot, AlertCircle, Sparkles, Zap, Settings, Search, Wifi, WifiOff, Sun, Moon, Monitor, Upload, Download } from 'lucide-react';
 import { chatApi } from './services/chatApi';
 
 function App() {
@@ -24,9 +24,10 @@ function App() {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [backendStatus, setBackendStatus] = useState<'online' | 'offline' | 'checking'>('checking');
+  const [showSettings, setShowSettings] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const { resolvedTheme } = useTheme();
+  const { theme, resolvedTheme, changeTheme } = useTheme();
   const { addNotification } = useNotifications();
   const {
     messages,
@@ -239,6 +240,14 @@ function App() {
                   <Sparkles size={16} />
                 </button>
 
+                <button
+                  onClick={() => setShowSettings(!showSettings)}
+                  className="btn-secondary p-2 hover-scale"
+                  title="Settings"
+                >
+                  <Settings size={16} />
+                </button>
+
                 {messages.length > 0 && (
                   <button
                     onClick={resetChat}
@@ -251,6 +260,64 @@ function App() {
               </div>
             </div>
           </header>
+
+          {/* Settings Panel */}
+          {showSettings && (
+            <div className="mx-3 sm:mx-4 mt-4 card-modern animate-scale-in relative z-50">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-semibold text-white flex items-center">
+                  <Settings size={18} className="mr-2" />
+                  Settings
+                </h3>
+                <button
+                  onClick={() => setShowSettings(false)}
+                  className="text-white/60 hover:text-white hover-scale"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              
+              <div className="space-y-4 sm:space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-white/80 mb-3">Theme</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { value: 'light', icon: Sun, label: 'Light' },
+                      { value: 'dark', icon: Moon, label: 'Dark' },
+                      { value: 'system', icon: Monitor, label: 'System' }
+                    ].map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={() => changeTheme(option.value as any)}
+                        className={`flex flex-col items-center p-2 sm:p-3 rounded-xl transition-all duration-300 hover-scale ${
+                          theme === option.value
+                            ? 'bg-gradient-to-r from-purple-500/30 to-blue-500/30 text-white border border-purple-400/30'
+                            : 'text-white/60 hover:text-white hover:bg-white/10'
+                        }`}
+                      >
+                        <option.icon size={18} className="mb-1 sm:mb-2" />
+                        <span className="text-xs font-medium">{option.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-white/80 mb-3">Data Management</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button className="btn-secondary text-sm flex items-center justify-center space-x-2 hover-lift">
+                      <Upload size={16} />
+                      <span>Import</span>
+                    </button>
+                    <button className="btn-secondary text-sm flex items-center justify-center space-x-2 hover-lift">
+                      <Download size={16} />
+                      <span>Export</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Quick Actions Panel */}
           {showQuickActions && (

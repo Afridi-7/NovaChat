@@ -60,8 +60,7 @@ export function Sidebar({
     archived: false
   });
   const [hoveredSession, setHoveredSession] = useState<string | null>(null);
-  const [showQuickStats, setShowQuickStats] = useState(true);
-  const { theme, changeTheme } = useTheme();
+  const [showQuickStats] = useState(true);
 
   useEffect(() => {
     loadSessions();
@@ -149,12 +148,6 @@ export function Sidebar({
       [section]: !prev[section]
     }));
   };
-
-  const themeOptions = [
-    { value: 'light', icon: Sun, label: 'Light' },
-    { value: 'dark', icon: Moon, label: 'Dark' },
-    { value: 'system', icon: Monitor, label: 'System' }
-  ];
 
   const quickStats = {
     totalChats: sessions.length,
@@ -494,85 +487,14 @@ export function Sidebar({
           </div>
 
           {/* Settings Panel */}
-          {showSettings && (
-            <div className="absolute bottom-16 sm:bottom-20 left-3 right-3 sm:left-4 sm:right-4 card-modern animate-scale-in z-50 max-h-80 sm:max-h-96 overflow-y-auto">
-              <h3 className="font-semibold text-white mb-4 flex items-center">
-                <Settings size={18} className="mr-2" />
-                Settings
-              </h3>
-              
-              <div className="space-y-4 sm:space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-3">Theme</label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {themeOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => changeTheme(option.value as any)}
-                        className={`flex flex-col items-center p-2 sm:p-3 rounded-xl transition-all duration-300 hover-scale ${
-                          theme === option.value
-                            ? 'bg-gradient-to-r from-purple-500/30 to-blue-500/30 text-white border border-purple-400/30'
-                            : 'text-white/60 hover:text-white hover:bg-white/10'
-                        }`}
-                      >
-                        <option.icon size={18} className="mb-1 sm:mb-2" />
-                        <span className="text-xs font-medium">{option.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-3">Quick Actions</label>
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => setShowQuickStats(!showQuickStats)}
-                      className={`w-full flex items-center justify-between p-2 sm:p-3 rounded-xl transition-all duration-300 ${
-                        showQuickStats ? 'bg-white/10' : 'hover:bg-white/5'
-                      }`}
-                    >
-                      <span className="text-sm text-white/80">Show Statistics</span>
-                      <div className={`w-5 h-5 rounded-full transition-all duration-300 ${
-                        showQuickStats ? 'bg-green-400' : 'bg-white/20'
-                      }`} />
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-white/80 mb-3">Data Management</label>
-                  <div className="space-y-2">
-                    <button className="w-full btn-secondary text-sm flex items-center justify-center space-x-2 hover-lift">
-                      <Upload size={16} />
-                      <span>Import Chats</span>
-                    </button>
-                    <button className="w-full btn-secondary text-sm flex items-center justify-center space-x-2 hover-lift">
-                      <Download size={16} />
-                      <span>Export All</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Footer */}
+          {/* Footer 
           <div className="p-3 sm:p-4 border-t border-white/10 bg-gradient-to-r from-transparent to-white/5">
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="w-full flex items-center space-x-2 sm:space-x-3 p-2 sm:p-3 text-white/70 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-300 hover-lift group"
-            >
-              <div className="relative">
-                <Settings size={16} className="group-hover:rotate-90 transition-transform duration-500" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse-soft" />
-              </div>
-              <span className="font-medium">Settings</span>
-              <div className="ml-auto flex items-center space-x-1 sm:space-x-2">
-                <span className="text-xs text-white/50 hidden sm:inline">v1.0</span>
-                <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
-              </div>
-            </button>
+            <div className="flex items-center justify-center text-xs text-white/50">
+              <span>NovaChat v1.0</span>
+            </div>
           </div>
+          */}
         </div>
       </div>
     </>
