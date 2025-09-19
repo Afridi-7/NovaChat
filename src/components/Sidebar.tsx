@@ -565,10 +565,12 @@ export function Sidebar({
                 <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse-soft" />
               </div>
               <span className="font-medium">Settings</span>
+              {/*
               <div className="ml-auto flex items-center space-x-2">
                 <span className="text-xs text-white/50">v1.0</span>
                 <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
               </div>
+              */}
             </button>
           </div>
         </div>
